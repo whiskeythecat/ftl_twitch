@@ -1,0 +1,175 @@
+<html>
+    <head>
+        <script type="text/javascript" src="Chart.min.js"></script>
+        <script type="text/javascript" src="session.json"></script>
+        <script>
+        var colors = ["#FF6F61", "#6B5B95", "#88B04B", "#F7CAC9", "#92A8D1", "#955251", "B565A7", "#009B77", "#DD4124", "#D65076", "#45B8AC", "#EFC050", "#5B5EA6", "#9B2335", "#DFCFBE", "#55B4B0"]
+        function load(){
+            var chartConfig = {
+            type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: false,
+                        text: ''
+                    },
+                    legend: {
+                        display: false
+                    },
+                    animation: {
+                        duration: 0
+                    },
+                    scales: {
+                        xAxes: [{
+                            display: true,
+                            gridLines: {
+                                color: "#FFFFFF"
+                            },
+                            ticks: {
+                                maxTicksLimit: 10,
+                                fontColor: "#FFFFFF"
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: "JUMPS",
+                                fontColor: "#FFFFFF"
+                            }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            gridLines: {
+                                color: "#FFFFFF"
+                            },
+                            ticks: {
+                                maxTicksLimit: 7,
+                                fontColor: "#FFFFFF"
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: "SCORE*",
+                                fontColor: "#FFFFFF"
+                            }
+                        }]
+                    }
+                }
+            };
+            var data = session;
+            var max_jumps = 0;
+            for(i = 0; i < data.length; i++){
+                let row = document.getElementById("table").insertRow(i+1);
+                let game = data[i];
+                let num_jumps = game["jumps"].length;
+                if (game["jumps"][num_jumps-1]["total_beacons_explored"] > max_jumps)
+                    max_jumps = game["jumps"][num_jumps-1]["total_beacons_explored"];
+                let gameCol = row.insertCell(0);
+                gameCol.innerHTML = i+1;
+                gameCol.style.color = colors[i];
+                row.insertCell(1).innerHTML = game["ship"].toUpperCase();
+                row.insertCell(2).innerHTML = (game["jumps"][num_jumps-1]["sector"]);
+                row.insertCell(3).innerHTML = game["jumps"][num_jumps-1]["total_beacons_explored"];
+                row.insertCell(4).innerHTML = game["jumps"][num_jumps-1]["total_scrap_collected"];
+                row.insertCell(5).innerHTML = game["jumps"][num_jumps-1]["total_ships_defeated"];
+
+                let chartData = [];
+                let score = 0;
+                for(var j = 1; j < game["jumps"][0]["total_beacons_explored"]; j++){
+                    chartData.push(0);
+                }
+                for(var j = 0; j < num_jumps; j++){
+                    // The score as calculated by the game
+                    score = game["jumps"][j]["total_scrap_collected"];
+                    score += game["jumps"][j]["total_beacons_explored"]*10;
+                    score += game["jumps"][j]["total_ships_defeated"]*20;
+                    score = Math.floor(score * 1.5);
+
+                    let my_score = game["jumps"][j]["total_scrap_collected"];
+                    my_score += game["jumps"][j]["total_ships_defeated"]*20;
+                    my_score -= game["jumps"][j]["hull"]*2;
+                    my_score -= game["jumps"][j]["repair"]*2;
+                    my_score -= game["jumps"][j]["fuel"]*2;
+
+                    chartData.push(my_score);
+                }
+                row.insertCell(6).innerHTML = score;
+                row.insertCell(7).innerHTML = chartData[chartData.length-1];
+                row.insertCell(8).innerHTML = Math.floor((game["jumps"][num_jumps-1]["time"] - game["jumps"][0]["time"])/60) + " min";
+                console.log(chartData);
+
+                let dataSet = {
+                    label: game["ship"].toUpperCase(),
+                    data: chartData,
+                    fill: false,
+                    backgroundColor: colors[i],
+                    borderColor: colors[i]
+                };
+                chartConfig.data.datasets.push(dataSet);
+            }
+            var labels = [];
+            for(var i = 0; i < max_jumps; i++){
+                labels.push("" + i);
+            }
+            chartConfig.data.labels = labels;
+
+            var chartDiv = document.getElementById("chart").getContext("2d");
+            var myChart = new Chart(chartDiv, chartConfig);
+        }
+        </script>
+        <style>
+        #table td,th{
+            padding-left: 8px;
+            padding-right: 8px;
+            padding-bottom: 3px;
+            padding-top: 3px;
+            background-color: rgba(32, 32, 32, 85%);
+            text-align: center;
+            font-size: 14px;
+        }
+        body{
+            margin: 0px;
+            color: white;
+            font-size: 18px;
+            padding-top: 10px;
+            text-align:center;
+        }
+        #container{
+            margin: auto;
+            display: inline-block;
+        }
+        #table{
+            margin-top: 10px;
+        }
+        #chartContainer{
+            background-color: rgba(32, 32, 32, 85%);
+            margin-top: 20px;
+            padding-top: 10px;
+            padding-right: 10px;
+        }
+        </style>
+    </head>
+    <body onload="load()">
+        <div id="container">
+            <table id="table">
+                <tr>
+                    <th>GAME</th>
+                    <th>SHIP</th>
+                    <th>SECTOR</th>
+                    <th>JUMPS</th>
+                    <th>SCRAP</th>
+                    <th>KILLED</th>
+                    <th>SCORE</th>
+                    <th>SCORE*</th>
+                    <th>LENGTH</th>
+                </tr>
+            </table>
+            <div id="chartContainer">
+                SCORE* CHART
+                <canvas id="chart">
+                </canvas>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <!-- Check me out at www.twitch.tv/whiskeydacat -->
+        <meta http-equiv=refresh content=10>
+        <script type="text/javascript" src="data.json"></script>
+        <script>
+        function load(){
+            document.getElementById("jumps").innerHTML = data["total_beacons_explored"];
+            document.getElementById("sector").innerHTML = data["sector"];
+            document.getElementById("scrap").innerHTML = data["total_scrap_collected"];
+            document.getElementById("ships").innerHTML = data["total_ships_defeated"];
+        }
+        </script>
+        <style>
+        .tile{
+            display:inline-block;
+            padding-left: 10px;
+            padding-right: 10px;
+            margin-left: 10px;
+            margin-right: 10px;
+            color: white;
+            font-size: 24px;
+            background-color: rgba(32, 32, 32, 75%);
+        }
+        body{
+            margin: 0px;
+        }
+        .container{
+            text-align:center;
+            width: 100%;
+            padding: auto;
+        }
+        </style>
+    </head>
+    <body onload="load()">
+        <div class="container">
+            <div class="tile">SECTOR: <span id="sector">0</span></div>
+            <div class="tile">JUMPS: <span id="jumps">0</span></div>
+            <div class="tile">SCRAP TOTAL: <span id="scrap">0</span></div>
+            <div class="tile">SHIPS KILLED: <span id="ships">0</span></div>
+        </div>
+    </body>
+</html>
